@@ -1,0 +1,253 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Joyeux Anniversaire Mado Sandra 🎉</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    img {
+      width: 80%;
+      max-width: 400px;
+      margin: 20px 0;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      object-fit: cover;
+    }
+
+    h1 {
+      color: #ff4081;
+      font-size: 2.2rem;
+      margin-top: 20px;
+    }
+
+    #riddle {
+      margin: 20px;
+      font-size: 1.3rem;
+      color: #333;
+    }
+
+    #hint {
+      color: #ff9800;
+      font-weight: bold;
+      margin: 10px;
+      display: none;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
+    }
+
+    button {
+      background-color: #ff4081;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e91e63;
+    }
+
+    #message {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      color: #4CAF50;
+      animation: fadeIn 2s ease-in-out forwards;
+      display: none;
+      padding: 0 20px;
+    }
+
+    @keyframes confetti {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: 0;
+      animation: confetti 3s linear infinite;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 🎵 Musique douce -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/01/audio_7c8b20c7f1.mp3" type="audio/mp3">
+    Ton navigateur ne supporte pas l'audio.
+  </audio>
+
+  <h1>💖 Pour toi Mado Sandra 💖</h1>
+
+  <!-- 📷 Uploaded photo -->
+  <img src="https://github.com/ChristTiger/birthday-mado-sandra/blob/main/sandra.jpg" alt="Mado Sandra" />
+
+  <div id="riddle"></div>
+  <input type="text" id="answer" placeholder="Ta réponse ici..." />
+  <button onclick="checkAnswer()">Valider</button>
+  <div id="hint"></div>
+  <div id="message"></div>
+
+  <script>
+    const riddles = [
+      {
+        question: "Je grandis mais je ne rajeunis jamais. On me fête une fois par an. Qui suis-je ?",
+        answer: "anniversaire",
+        hint: "On te le souhaite chaque année 🎂"
+      },
+      {
+        question: "Je suis une couleur et un fruit à la fois, qui suis-je ?",
+        answer: "orange",
+        hint: "Je suis aussi un jus très populaire 🍊"
+      },
+      {
+        question: "Je brille dans le ciel la nuit mais je ne suis pas le soleil. Qui suis-je ?",
+        answer: "lune",
+        hint: "On me voit souvent en croissant 🌙"
+      }
+    ];
+
+    let current = 0;
+    let attempts = 0;
+
+    const riddleDiv = document.getElementById("riddle");
+    const answerInput = document.getElementById("answer");
+    const messageDiv = document.getElementById("message");
+    const hintDiv = document.getElementById("hint");
+
+    function showRiddle() {
+      riddleDiv.textContent = riddles[current].question;
+      hintDiv.style.display = "none";
+      answerInput.value = "";
+      messageDiv.style.display = "none";
+      answerInput.focus();
+    }
+
+    function checkAnswer() {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      if (userAnswer === riddles[current].answer) {
+        current++;
+        attempts = 0;
+        if (current < riddles.length) {
+          alert("Bravo ! Passons à la prochaine énigme !");
+          showRiddle();
+        } else {
+          showFinalMessage();
+        }
+      } else {
+        attempts++;
+        messageDiv.style.display = "block";
+        messageDiv.style.color = "#f44336";
+        messageDiv.textContent = "Hmm… ce n’est pas la bonne réponse. Essaie encore !";
+        if (attempts >= 2) {
+          hintDiv.textContent = "Indice : " + riddles[current].hint;
+          hintDiv.style.display = "block";
+        }
+      }
+    }
+
+    function showFinalMessage() {
+      riddleDiv.style.display = "none";
+      answerInput.style.display = "none";
+      hintDiv.style.display = "none";
+      document.querySelector("button").style.display = "none";
+
+      messageDiv.innerHTML = `
+        🎉 Bravo Mado Sandra ! 🎉<br><br>
+        Tu as résolu toutes les énigmes avec brio !<br><br>
+        💖 JOYEUX ANNIVERSAIRE 💖<br><br>
+
+        Aujourd’hui, je célèbre bien plus que ta naissance. Je célèbre ta lumière, ta gentillesse, ton rire, et tous les instants que nous avons partagés.<br><br>
+
+        Chaque moment passé avec toi est une pépite dans mon cœur. Tes paroles, ta présence, ton écoute… tout cela m’est cher et inoubliable. 💫<br><br>
+
+        J’espère que cette journée sera aussi belle et lumineuse que toi. Que tes rêves prennent vie, que tes sourires se multiplient, et que l’amour t’accompagne chaque jour un peu plus. 💐<br><br>
+
+        Merci d’être cette amie incroyable, celle avec qui je peux tout partager. Je suis heureuse de te connaître, et encore plus de marcher un bout de chemin avec toi dans cette vie. 🥰<br><br>
+
+        💌 Avec toute mon affection,<br>
+        <strong>Ta précieuse amie</strong> ❤️<br><br>
+
+        🥳🎂🎁🎈🌟
+      `;
+      messageDiv.style.display = "block";
+      launchConfetti();
+    }
+
+    function launchConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        confetti.style.animationDuration = `${2 + Math.random() * 3}s`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+      }
+    }
+
+    showRiddle();
+  </script>
+</body>
+</html>
